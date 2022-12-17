@@ -44,7 +44,7 @@ def Face_regco_model(weights_path='weights/Embedding_DenseNet.hdf5'):
 
 
 def Face_regco_model_2(weights_path='weights/dennet_mini.hdf5'):
-    base_cnn = tf.keras.applications.densenet.DenseNet169(
+    base_cnn = tf.keras.applications.densenet.DenseNet121(
         weights=None, input_shape=(224, 224, 3), include_top=False
     )
 
@@ -124,7 +124,7 @@ def eyes_stable_warning(left_eyes_stable1, left_eyes_stable2, right_eyes_stable1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=str, default=0)
+    parser.add_argument('--source', type=str, default='data/7349393942338448557.mp4')
     parser.add_argument('--path_npy_file', type=str, default='data/test.out')
     parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
@@ -150,6 +150,7 @@ if __name__ == '__main__':
                 Face_Crop = Crop_pred(img, Face_keypoint_value)
                 Face_Crop = process_img(img=Face_Crop, img_size=Face_reg_size)
                 Emd_Predict_Face = Face_reg.predict(Face_Crop)
+                # print(Emd_Predict_Face)
                 face_name = detect_face_name(Emd_Predict_Face, Test_Face_Tensor, List_name, Distance_model)
 
                 left_eyes_img, right_eyes_img = Crop_eyes(img, Face_keypoint_value)
