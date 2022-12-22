@@ -45,7 +45,7 @@ def Face_regco_model(weights_path='weights/Embedding_DenseNet.hdf5'):
 
 def Face_regco_model_2(weights_path='weights/dennet_mini.hdf5'):
     base_cnn = tf.keras.applications.densenet.DenseNet121(
-        weights=None, input_shape=(224, 224, 3), include_top=False
+        weights=None, input_shape=(224, 224, 1), include_top=False
     )
 
     flatten = tf.keras.layers.Flatten()(base_cnn.output)
@@ -73,17 +73,18 @@ def process_img(img, img_size):
     rgb_tensor = tf.convert_to_tensor(img, dtype=tf.float32)
 
     rgb_tensor = tf.expand_dims(rgb_tensor, 0)
-
     return rgb_tensor
 
 
 def process_img_2(img, img_size):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
     img = cv2.resize(img, img_size)
-    rgb_tensor = tf.convert_to_tensor(img, dtype=tf.float32)
-
-    rgb_tensor = tf.expand_dims(rgb_tensor, 0)
-
-    return rgb_tensor
+    # rgb_tensor = tf.convert_to_tensor(img, dtype=tf.float32)
+    image = tf.image.convert_image_dtype(img, tf.float32)
+    image_out = tf.expand_dims(image, 0)
+    # print(image_out)
+    return image_out
 
 
 def make_predict_tensor(predict_tensor, len_of_tensor=5):
@@ -113,7 +114,8 @@ def distance_model(input1_name="dist_in1", input2_name="dist_in2", input_shape=2
 def detect_face_name(emd_predict_face, test_face_tensor, list_name, model):
     out = model((emd_predict_face, test_face_tensor))
     index_max = tf.math.argmin(out).numpy()
-    return list_name[index_max]
+    return str(index_max)
+    # return list_name[index_max]
 
 
 def eyes_stable_warning(left_eyes_stable1, left_eyes_stable2, right_eyes_stable1, right_eyes_stable2):
@@ -124,14 +126,14 @@ def eyes_stable_warning(left_eyes_stable1, left_eyes_stable2, right_eyes_stable1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=str, default='data/7349393942338448557.mp4')
-    parser.add_argument('--path_npy_file', type=str, default='data/test.out')
-    parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
+    parser.add_argument('--source', type=str, default='data/VID20221221100307.mp4')
+    parser.add_argument('--path_npy_file', type=str, default='data/emd_21_12_2022_01-0.07-95.out')
+    parser.add_argument('--weights_face_reg', type=str, default='weights/emd_21_12_2022_01-0.07.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
     opt = parser.parse_args()
 
     Face_keypoint_model = YoloDetector(target_size=1200, gpu=1, min_face=1, yolo_type='yolov5n')
-    Face_reg = Face_regco_model(opt.weights_face_reg)
+    Face_reg = Face_regco_model_2(opt.weights_face_reg)
     Eyes_stable_model = Eyes_stable_model(opt.weights_eyes_stables)
     Distance_model = distance_model('Emd', 'Test', 256)
     List_name = ['Dương', 'Nhất', 'An', 'd', 'Vu']
@@ -148,7 +150,7 @@ if __name__ == '__main__':
             # print(Face_keypoint_value)
             if len(Face_keypoint_value[1][0]) > 0:
                 Face_Crop = Crop_pred(img, Face_keypoint_value)
-                Face_Crop = process_img(img=Face_Crop, img_size=Face_reg_size)
+                Face_Crop = process_img_2(img=Face_Crop, img_size=Face_reg_size)
                 Emd_Predict_Face = Face_reg.predict(Face_Crop)
                 # print(Emd_Predict_Face)
                 face_name = detect_face_name(Emd_Predict_Face, Test_Face_Tensor, List_name, Distance_model)
@@ -167,7 +169,7 @@ if __name__ == '__main__':
                 else:
                     right_eyes = 0
 
-                eyes_stable_warning(left_eyes, right_eyes, last_l_eyes_stable, last_r_eyes_stable)
+                # eyes_stable_warning(left_eyes, right_eyes, last_l_eyes_stable, last_r_eyes_stable)
                 print(face_name, left_eyes, right_eyes)
                 last_l_eyes_stable, last_r_eyes_stable = left_eyes, right_eyes
                 img = Show_name(img, Face_keypoint_value, face_name)
