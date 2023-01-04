@@ -4,7 +4,7 @@ Created on Thu Sep 22 21:13:58 2022
 
 @author: DinhVu
 """
-
+import time
 import argparse
 import cv2
 import numpy as np
@@ -71,7 +71,7 @@ def detect_face_name(emd_predict_face, test_face_tensor, model):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=str, default='data/video-f1b7c41a-0add-4af1-adb7-2e7b8c7e4e67-1665057340.mp4')
+    parser.add_argument('--source', type=str, default='data/WIN_20220901_08_01_13_Pro.mp4')
     parser.add_argument('--path_npy_file', type=str, default='data/test.out')
     parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
@@ -91,6 +91,7 @@ if __name__ == '__main__':
     last_l_eyes_stable, last_r_eyes_stable = 1, 1
     count = 0
     while True:
+        time1 = time.time()
         ret, img = cap.read()
         count = count + 1
         if ret:
@@ -125,6 +126,8 @@ if __name__ == '__main__':
             else:
                 print('No one')
             cv2.imwrite(opt.save_frame_path + 'frame' + str(count) + '.png' , img)
+            print(time.time() - time1)
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:
