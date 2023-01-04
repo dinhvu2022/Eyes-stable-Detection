@@ -81,7 +81,7 @@ def eyes_stable_warning(left_eyes_stable1, left_eyes_stable2, right_eyes_stable1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=str, default='data/VID_20230104_155154.mp4')
+    parser.add_argument('--source', type=str, default='data/VID_20230104_155154_mid.mp4')
     parser.add_argument('--path_npy_file', type=str, default='data/test.out')
     parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
@@ -135,7 +135,7 @@ if __name__ == '__main__':
             else:
                 print('No one')
             cv2.imshow('frame', img)
-            
+
             print(time.time() - time1)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
