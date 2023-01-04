@@ -14,7 +14,7 @@ import tensorflow as tf
 
 from yolov5facedetector.face_detector import YoloDetector
 
-from utils.crop import Crop_eyes, Crop_face, Crop_pred
+from utils.crop import Crop_eyes, Crop_pred
 from utils.show_result import Show_name, Show_eyes_stable
 
 from model.distance_model import DistanceLayer2
@@ -84,6 +84,8 @@ if __name__ == '__main__':
     parser.add_argument('--path_npy_file', type=str, default='data/test.out')
     parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
+    parser.add_argument('--save_frame_path', type=str, default='/content/')
+
     opt = parser.parse_args()
 
     Face_keypoint_model = YoloDetector(target_size=1200, gpu=1, min_face=1, yolo_type='yolov5n')
@@ -99,6 +101,7 @@ if __name__ == '__main__':
     last_l_eyes_stable, last_r_eyes_stable = 1, 1
     while True:
         ret, img = cap.read()
+        count = 0
         if ret:
             Face_keypoint_value = Face_keypoint_model.predict(img)
             # print(Face_keypoint_value)
@@ -131,7 +134,7 @@ if __name__ == '__main__':
                                        right_eyes)
             else:
                 print('No one')
-            cv2.imshow('frame', img)
+            cv2.imwrite(opt.save_frame_path + 'frame' + count , img)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:
