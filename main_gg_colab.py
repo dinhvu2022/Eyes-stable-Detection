@@ -5,8 +5,6 @@ Created on Thu Sep 22 21:13:58 2022
 @author: DinhVu
 """
 
-# import os
-import winsound
 import argparse
 import cv2
 import numpy as np
@@ -66,17 +64,10 @@ def distance_model(input1_name="dist_in1", input2_name="dist_in2", input_shape=2
     return model
 
 
-def detect_face_name(emd_predict_face, test_face_tensor, list_name, model):
+def detect_face_name(emd_predict_face, test_face_tensor, model):
     out = model((emd_predict_face, test_face_tensor))
     index_max = tf.math.argmin(out).numpy()
     return str(index_max)
-    # return list_name[index_max]
-
-
-def eyes_stable_warning(left_eyes_stable1, left_eyes_stable2, right_eyes_stable1, right_eyes_stable2):
-    if (left_eyes_stable1 + left_eyes_stable2 + right_eyes_stable1 + right_eyes_stable2 )== 0:
-        winsound.Beep(2000, 1000)
-    pass
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -92,16 +83,16 @@ if __name__ == '__main__':
     Face_reg = Face_regco_model(opt.weights_face_reg)
     Eyes_stable_model = Eyes_stable_model(opt.weights_eyes_stables)
     Distance_model = distance_model('Emd', 'Test', 256)
-    List_name = ['Dương', 'Nhất', 'An', 'd', 'Vu']
     Test_Face_Tensor = load_tensor_test_file(opt.path_npy_file)
     Face_reg_size = Face_reg.input.type_spec.shape[1:-1]
     Eyes_stable_size = Eyes_stable_model.input.type_spec.shape[1:-1]
 
     cap = cv2.VideoCapture(opt.source)
     last_l_eyes_stable, last_r_eyes_stable = 1, 1
+    count = 0
     while True:
         ret, img = cap.read()
-        count = 0
+        count = count + 1
         if ret:
             Face_keypoint_value = Face_keypoint_model.predict(img)
             # print(Face_keypoint_value)
@@ -110,7 +101,7 @@ if __name__ == '__main__':
                 Face_Crop = process_img(img=Face_Crop, img_size=Face_reg_size)
                 Emd_Predict_Face = Face_reg.predict(Face_Crop)
                 # print(Emd_Predict_Face)
-                face_name = detect_face_name(Emd_Predict_Face, Test_Face_Tensor, List_name, Distance_model)
+                face_name = detect_face_name(Emd_Predict_Face, Test_Face_Tensor, Distance_model)
 
                 left_eyes_img, right_eyes_img = Crop_eyes(img, Face_keypoint_value)
                 if left_eyes_img is not None:
@@ -126,7 +117,6 @@ if __name__ == '__main__':
                 else:
                     right_eyes = 0
 
-                eyes_stable_warning(left_eyes, right_eyes, last_l_eyes_stable, last_r_eyes_stable)
                 print(face_name, left_eyes, right_eyes)
                 last_l_eyes_stable, last_r_eyes_stable = left_eyes, right_eyes
                 img = Show_name(img, Face_keypoint_value, face_name)
@@ -134,7 +124,7 @@ if __name__ == '__main__':
                                        right_eyes)
             else:
                 print('No one')
-            cv2.imwrite(opt.save_frame_path + 'frame' + count , img)
+            cv2.imwrite(opt.save_frame_path + 'frame' + str(count) + '.png' , img)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:
