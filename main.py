@@ -67,7 +67,7 @@ def distance_model(input1_name="dist_in1", input2_name="dist_in2", input_shape=2
     return model
 
 
-def detect_face_name(emd_predict_face, test_face_tensor, list_name, model):
+def detect_face_name(emd_predict_face, test_face_tensor, model):
     out = model((emd_predict_face, test_face_tensor))
     index_max = tf.math.argmin(out).numpy()
     return str(index_max)
@@ -81,17 +81,16 @@ def eyes_stable_warning(left_eyes_stable1, left_eyes_stable2, right_eyes_stable1
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--source', type=str, default='data/VID_20230104_155154_mid.mp4')
+    parser.add_argument('--source', type=str, default=0)
     parser.add_argument('--path_npy_file', type=str, default='data/test.out')
     parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
     opt = parser.parse_args()
 
-    Face_keypoint_model = YoloDetector(target_size=1200, gpu=1, min_face=1, yolo_type='yolov5n')
+    Face_keypoint_model = YoloDetector(target_size=1200, gpu=1, min_face=1, yolo_type='yolov5l')
     Face_reg = Face_regco_model(opt.weights_face_reg)
     Eyes_stable_model = Eyes_stable_model(opt.weights_eyes_stables)
     Distance_model = distance_model('Emd', 'Test', 256)
-    List_name = ['Dương', 'Nhất', 'An', 'd', 'Vu']
     Test_Face_Tensor = load_tensor_test_file(opt.path_npy_file)
     Face_reg_size = Face_reg.input.type_spec.shape[1:-1]
     Eyes_stable_size = Eyes_stable_model.input.type_spec.shape[1:-1]
@@ -110,7 +109,7 @@ if __name__ == '__main__':
                 Face_Crop = process_img(img=Face_Crop, img_size=Face_reg_size)
                 Emd_Predict_Face = Face_reg.predict(Face_Crop)
                 # print(Emd_Predict_Face)
-                face_name = detect_face_name(Emd_Predict_Face, Test_Face_Tensor, List_name, Distance_model)
+                face_name = detect_face_name(Emd_Predict_Face, Test_Face_Tensor, Distance_model)
 
                 left_eyes_img, right_eyes_img = Crop_eyes(img, Face_keypoint_value)
                 if left_eyes_img is not None:
