@@ -7,6 +7,8 @@ Python environment (recommended)
 ``` shell
 pip install requirements.txt
 ```
+## Data 
+    Eyes Stable Data in [Huggingface Spaces 🤗](https://huggingface.co/spaces/akhaliq/yolov7)
 ## Train Eyes Classification
 ``` shell
 python train_eyes_stable.py --train_dir /content/data/train --val_dir /content/data/test --save_weights /content/weights --batch_size 32 --epochs 5
