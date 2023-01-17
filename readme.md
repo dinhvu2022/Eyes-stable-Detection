@@ -1,4 +1,6 @@
 # Eyes Stable Detection with YOLOV5-Face and DenseNet Model
+
+![](data/daniel-craigv.jpg) 
 ## Installation
 
 Python environment (recommended)
@@ -8,7 +10,9 @@ Python environment (recommended)
 pip install requirements.txt
 ```
 ## Data 
-    Eyes Stable Data in [Huggingface Spaces 🤗](https://huggingface.co/spaces/akhaliq/yolov7)
+
+Eyes Stable Data in [ggdrive](https://drive.google.com/file/d/1g-yyGRuvnez9Fru2l2lKgRNXYJPgU_08/view?usp=share_link)
+
 ## Train Eyes Classification
 ``` shell
 python train_eyes_stable.py --train_dir /content/data/train --val_dir /content/data/test --save_weights /content/weights --batch_size 32 --epochs 5
