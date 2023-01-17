@@ -1,4 +1,4 @@
-# Nhận diện trạng thái mắt với YOLOV5-Face và DenseNet Model
+# Eyes Stable Detection with YOLOV5-Face and DenseNet Model
 ## Installation
 
 Python environment (recommended)

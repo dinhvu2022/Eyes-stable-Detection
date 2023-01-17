@@ -12,6 +12,8 @@ import tensorflow as tf
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('--input_size', type = int, default=(86,86))
+
     parser.add_argument('--train_dir', type = str, default='data')
     parser.add_argument('--val_dir', type = str, default='data')
     parser.add_argument('--batch_size', type = int, default=32)
@@ -26,14 +28,14 @@ if __name__ == '__main__':
         label_mode='categorical',
         batch_size= opt.batch_size,
         color_mode = 'grayscale',
-        image_size=(86, 86))
+        image_size=opt.input_size)
     validation_ds = tf.keras.utils.image_dataset_from_directory(
         directory= opt.val_dir,
         labels='inferred',
         label_mode='categorical',
         color_mode = 'grayscale',
         batch_size= opt.batch_size,
-        image_size=(86, 86))
+        image_size= opt.input_size ) 
     
     model = tf.keras.applications.densenet.DenseNet169(weights=None, 
                                                        input_shape=(86, 86, 1), 
