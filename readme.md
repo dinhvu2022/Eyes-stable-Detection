@@ -13,7 +13,7 @@ pip install requirements.txt
 
 Sample eyes stable data in [ggdrive](https://drive.google.com/file/d/1g-yyGRuvnez9Fru2l2lKgRNXYJPgU_08/view?usp=share_link)
 
-Sample eyes stable face regconition in [ggdrive](https://drive.google.com/file/d/1YItFXysp9qKwikw2D3vfKv5V-QXz2FfJ/view?usp=share_link)
+Sample face regconition data in [ggdrive](https://drive.google.com/file/d/1--d0onX2p4NvaQ61tuzpp-3Fe-Pbl9WR/view?usp=sharing)
 
 ## Train Eyes Classification
 ``` shell
