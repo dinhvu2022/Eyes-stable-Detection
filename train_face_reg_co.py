@@ -9,7 +9,7 @@ import argparse
 import tensorflow as tf
 
 from model.Face_reg_model import DistanceLayer, SiameseModel
-from dataset.Face_recg_dataset import Create_dataset, Create_apn_list, Read_excel_apn, visualize
+from dataset.Face_recg_dataset import Triple_dataset, Create_apn_list, Read_excel_apn, visualize
 
 
 def base_model(name):
@@ -35,22 +35,32 @@ def base_model(name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', type=str, default='data')
+    parser.add_argument('--data', type=str, help = 'triple data',default='data')
+    parser.add_argument('--tptrain', type=str, help = 'triple data',default='train.xlsx')
+    parser.add_argument('--tptest', type=str, help = 'triple data',default='test.xlsx')
     parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--save_last', type=bool, default=True)
+    parser.add_argument('--only_save_best', type=bool, default=True)
 
     opt = parser.parse_args()
 
-    anchor, positive, negative = [], [], []
-    if opt.data[:-4] != '.xlsx':
-        print('đọc dataset từ file xlsx')
-        anchor, positive, negative = Read_excel_apn(opt.data)
-    elif opt.data[:1] != '/':
-        "tạo dataset chưa có sẵn file ano"
-        anchor, positive, negative = Create_apn_list(opt.data, opt.data + '/dataset.xlsx')
+    if opt.tptrain == None and opt.test == None:
+        "creat .xlsx"
+        train_triplet, test_triplet = Create_apn_list(opt.data, incluce_train_test = True)
+        trainset = Triple_dataset(train_triplet[0], train_triplet[1], train_triplet[2], batch_size = 16)
+        testset = Triple_dataset(test_triplet[0], test_triplet[1], test_triplet[2], batch_size = 16)
+    
+    elif opt.tptrain[:-4] == '.xlsx' and opt.tptest[:-4] == '.xlsx':
+        print('.xlsx')
+        train_triplet = Read_excel_apn(opt.tptrain)
+        test_triplet = Read_excel_apn(opt.tptest)
+        trainset = Triple_dataset(train_triplet[0], train_triplet[1], train_triplet[2], batch_size = 16)
+        testset = Triple_dataset(test_triplet[0], test_triplet[1], test_triplet[2], batch_size = 16)
+    else:
+        print('tptrain, tptrain is .xlsx or None')
+    
 
-    train, val = Create_dataset(anchor, positive, negative)
-
-    visualize(*list(train.take(1).as_numpy_iterator())[0])
+    visualize(*list(trainset.take(1).as_numpy_iterator())[0])
 
     embedding = base_model('Embedding')
 
@@ -76,5 +86,5 @@ if __name__ == '__main__':
         save_weights_only=True,
         monitor='val_accuracy',
         mode='max',
-        save_best_only=False)
-    siamese_model.fit(train, epochs=opt.epochs, validation_data=val, callbacks=[model_checkpoint_callback])
+        save_best_only=opt.only_save_best)
+    history = siamese_model.fit(trainset, epochs=opt.epochs, validation_data=testset, callbacks=[model_checkpoint_callback])

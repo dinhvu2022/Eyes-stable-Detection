@@ -19,7 +19,7 @@ from utils.crop import Crop_eyes, Crop_face, Crop_pred
 from utils.show_result import Show_name, Show_eyes_stable
 
 from model.distance_model import DistanceLayer2
-
+from model.Face_reg_model import Siamese_model
 
 def Eyes_stable_model(weights_path='weights/Eyes_stable_model_best_07-0.04.hdf5'):
     model = tf.keras.applications.densenet.DenseNet169(weights=None, input_shape=(86, 86, 1), classes=2)
@@ -83,12 +83,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=str, default=0)
     parser.add_argument('--path_npy_file', type=str, default='data/test.out')
+    parser.add_argument('--weights_face_reg_Emd', type=bool, default=True)
     parser.add_argument('--weights_face_reg', type=str, default='weights/Embedding_DenseNet.hdf5')
     parser.add_argument('--weights_eyes_stables', type=str, default='weights/Eyes_stable_model_best_07-0.04.hdf5')
     opt = parser.parse_args()
 
     Face_keypoint_model = YoloDetector(target_size=1200, gpu=1, min_face=1, yolo_type='yolov5l')
-    Face_reg = Face_regco_model(opt.weights_face_reg)
+    if opt.weights_face_reg_Emd:
+        Face_reg = Face_regco_model(opt.weights_face_reg)
+    else:
+        print("load from SiameseModel")
+        siamese_model = Siamese_model(opt.weights_face_reg)
+        Face_reg = siamese_model.siamese_network.get_layer('Embedding')
     Eyes_stable_model = Eyes_stable_model(opt.weights_eyes_stables)
     Distance_model = distance_model('Emd', 'Test', 256)
     Test_Face_Tensor = load_tensor_test_file(opt.path_npy_file)

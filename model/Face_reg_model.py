@@ -24,40 +24,44 @@ class DistanceLayer(tf.keras.layers.Layer):
         an_distance = tf.reduce_sum(tf.square(anchor - negative), -1)
         return ap_distance, an_distance
 
+def Siamese_model(weight = None):
+    base_cnn = tf.keras.applications.densenet.DenseNet169(
+        weights=None, input_shape=(224, 224, 1), include_top=False
+    )
 
-base_cnn = tf.keras.applications.densenet.DenseNet169(
-    weights=None, input_shape=(224, 224, 1), include_top=False
-)
+    flatten = tf.keras.layers.Flatten()(base_cnn.output)
+    dense1 = tf.keras.layers.Dense(512, activation="relu")(flatten)
+    dense1 = tf.keras.layers.BatchNormalization()(dense1)
+    dense2 = tf.keras.layers.Dense(256, activation="relu")(dense1)
+    dense2 = tf.keras.layers.BatchNormalization()(dense2)
+    output = tf.keras.layers.Dense(256)(dense2)
 
-flatten = tf.keras.layers.Flatten()(base_cnn.output)
-dense1 = tf.keras.layers.Dense(512, activation="relu")(flatten)
-dense1 = tf.keras.layers.BatchNormalization()(dense1)
-dense2 = tf.keras.layers.Dense(256, activation="relu")(dense1)
-dense2 = tf.keras.layers.BatchNormalization()(dense2)
-output = tf.keras.layers.Dense(256)(dense2)
+    embedding = tf.keras.Model(base_cnn.input, output, name="Embedding")
 
-embedding = tf.keras.Model(base_cnn.input, output, name="Embedding")
+    trainable = False
+    for layer in base_cnn.layers:
+        if layer.name == "conv5_block1_out":
+            trainable = True
+        layer.trainable = trainable
 
-trainable = False
-for layer in base_cnn.layers:
-    if layer.name == "conv5_block1_out":
-        trainable = True
-    layer.trainable = trainable
+    anchor_input = tf.keras.layers.Input(name="anchor", shape=(224, 224, 1))
+    positive_input = tf.keras.layers.Input(name="positive", shape=(224, 224, 1))
+    negative_input = tf.keras.layers.Input(name="negative", shape=(224, 224, 1))
 
-anchor_input = tf.keras.layers.Input(name="anchor", shape=(224, 224, 1))
-positive_input = tf.keras.layers.Input(name="positive", shape=(224, 224, 1))
-negative_input = tf.keras.layers.Input(name="negative", shape=(224, 224, 1))
+    distances = DistanceLayer()(
+        embedding(anchor_input),
+        embedding(positive_input),
+        embedding(negative_input),
+    )
 
-distances = DistanceLayer()(
-    embedding(anchor_input),
-    embedding(positive_input),
-    embedding(negative_input),
-)
-
-siamese_network = tf.keras.Model(
-    inputs=[anchor_input, positive_input, negative_input], outputs=distances
-)
-
+    siamese_network = tf.keras.Model(
+        inputs=[anchor_input, positive_input, negative_input], outputs=distances
+    )
+    siamese_model = SiameseModel(siamese_network)
+    if siamese_model != None:
+        siamese_model.built = True
+        siamese_model.load_weights(weight)
+    return siamese_model
 
 class SiameseModel(tf.keras.Model):
     """The Siamese Network model with a custom training and testing loops.
