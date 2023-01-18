@@ -19,9 +19,9 @@ Sample eyes stable face regconition in [ggdrive](https://drive.google.com/file/d
 ``` shell
 python train_eyes_stable.py --train_dir /content/data/train --val_dir /content/data/test --save_weights /content/weights --batch_size 32 --epochs 5
 ```
-## Train Eyes Classification
+## Train Face Regconition
 ``` shell
-python train_face_reg_co.py --train_dir /content/data/train --val_dir /content/data/test --save_weights /content/weights --batch_size 32 --epochs 5
+python train_face_reg_co.py --data /content/all/ --tptrain train.xlsx --tptest test.xlsx --weights_folder /content/weights --batch_size 8 --epochs 5
 ```
 
 ## Train Weights
